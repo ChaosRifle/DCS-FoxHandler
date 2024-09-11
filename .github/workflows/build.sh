@@ -68,21 +68,9 @@ if [ -d "./scripts" ]; then
   echo 'scripts directory found'
   cp -r "./scripts" "$OUTPUT_DIR"
   
-  echo
-  echo "./scripts:"
-  ls "./scripts"
-  echo
-  echo "REPO_DIR/scripts:"
-  echo "$REPO_DIR/scripts/"
-  ls $REPO_DIR/scripts/
-  echo
-  echo "current dir:"
-  ls
-  echo
-
   echo ===========================================================================
 
-  if [ -f "$OUTPUT_DIR/scripts/CONFIG_%MissionName%.lua" ]; then
+  if [ -f "./scripts/CONFIG_%MissionName%.lua" ]; then
     echo 'config file needing merging detected..'
     rm -rf $OUTPUT_DIR/scripts/CONFIG_%MissionName%.lua
 
