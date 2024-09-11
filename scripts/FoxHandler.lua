@@ -89,7 +89,7 @@ function FoxHandler:onEvent(event)
             local playerName = Unit.getPlayerName(event.initiator)
             if playerName then
                 local playerInfo = GetPlayerInfo(playerName)
-                FoxUsers[playerInfo.ucid].rx = true
+                FoxUsers[playerInfo.ucid].tx = true
                 trigger.action.removeMark(event.idx) --delete the message from being seen by other people, as it was a command.
             end
         end
