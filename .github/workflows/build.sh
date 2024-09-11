@@ -34,7 +34,7 @@ chmod 600 "$DEPLOY_KEY_FILE"
 SSH_KNOWN_HOSTS_FILE="$HOME/.ssh/known_hosts"
 ssh-keyscan -H "$GIT_SERVER" > "$SSH_KNOWN_HOSTS_FILE"
 export GIT_SSH_COMMAND="ssh -i "$DEPLOY_KEY_FILE" -o UserKnownHostsFile=$SSH_KNOWN_HOSTS_FILE"
-GIT_CMD_REPOSITORY="git@$GIT_SERVER:$USER_NAME/$MERGE_REPO.git"
+
 
 
 git config --global user.email $USER_EMAIL
@@ -45,6 +45,15 @@ git config --global http.version HTTP/1.1
 echo 'github configured.'
 echo ===========================================================================
 echo 'main script begins..'
+
+echo 'cloning output repo to build commit/push'
+mkdir "$HOME/git"
+mkdir "$HOME/git/outputrepo"
+GIT_CMD_REPOSITORY="git@$GIT_SERVER:$USER_NAME/$OUTPUT_REPO.git"
+git clone --branch dev "$GIT_CMD_REPOSITORY" "$HOME/git/outputrepo"
+cp -r "$HOME/git/outputrepo" "$OUTPUT_DIR"
+    
+echo ===========================================================================
 
 mkdir "$OUTPUT_DIR"
 if [ -d "./miz" ]; then
@@ -81,6 +90,7 @@ if [ -d "./scripts" ]; then
     echo 'cloning repo to get merge file..'
     mkdir "$HOME/git"
     mkdir $MERGE_DIR
+    GIT_CMD_REPOSITORY="git@$GIT_SERVER:$USER_NAME/$MERGE_REPO.git"
     git clone --branch dev "$GIT_CMD_REPOSITORY" "$MERGE_DIR"
     echo 'merge directory contents:'
     ls $MERGE_DIR
