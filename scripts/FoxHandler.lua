@@ -62,9 +62,33 @@ function FoxHandler:onEvent(event)
             env.info(unitName, ' Rifle!')
         else 
             env.info(unitName, 'rifle!')
+        end
+    elseif event.id == world.event.S_EVENT_MARK_ADDED then -- marker commands                                           -- IDENTICAL TO S_EVENT_MARK_ADDED, S_EVENT_MARK_CHANGE
+        -- Event = {
+        --     id = 25,
+        --     idx = number markId,
+        --     time = Abs time,
+        --     initiator = Unit,
+        --     coalition = number coalitionId,
+        --     groupID = number groupId,
+        --     text = string markText,
+        --     pos = vec3
+        --    }
+    elseif event.id == world.event.S_EVENT_MARK_CHANGE then -- marker commands                                          -- IDENTICAL TO S_EVENT_MARK_ADDED, S_EVENT_MARK_CHANGE
+        -- Event = {
+        --     id = 26,
+        --     idx = number markId,
+        --     time = Abs time,
+        --     initiator = Unit,
+        --     coalition = number coalitionId,
+        --     groupID = number groupId,
+        --     text = string markText,
+        --     pos = vec3
+        --    }
+        if text == 'foxhandler tx enable' then
+            trigger.action.removeMark(event.idx) --delete the message from being seen by other people, as it was a command.
+        end
     end
-
-end
 
     
 end
