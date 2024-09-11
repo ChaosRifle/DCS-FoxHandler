@@ -4,7 +4,7 @@
 
 --local saveDataSubfolder = 'saves/'
 --local saveNamePrefix = MissionName .. '_'
-
+FoxUsers = {}
 --main
 if not FileExists(table.concat({FilePath, saveDataSubfolder, saveNamePrefix, 'FoxHandler_B_Players.lua'})) then
     TableSave(table.concat({FilePath, saveDataSubfolder, saveNamePrefix, 'FoxHandler_B_Players.lua'}),{})
@@ -86,7 +86,12 @@ function FoxHandler:onEvent(event)
         --     pos = vec3
         --    }
         if text == 'foxhandler tx enable' then
-            trigger.action.removeMark(event.idx) --delete the message from being seen by other people, as it was a command.
+            local playerName = Unit.getPlayerName(event.initiator)
+            if playerName then
+                local playerInfo = GetPlayerInfo(playerName)
+                FoxUsers[playerInfo.ucid].rx = true
+                trigger.action.removeMark(event.idx) --delete the message from being seen by other people, as it was a command.
+            end
         end
     end
 
