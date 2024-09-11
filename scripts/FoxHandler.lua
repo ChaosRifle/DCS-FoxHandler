@@ -7,6 +7,7 @@
 
 
 FoxUsers = {}
+
 --main
 if not FileExists(table.concat({ FilePath, saveDataSubfolder, saveNamePrefix, 'FoxHandler_B_Players.lua' })) then
     TableSave(table.concat({ FilePath, saveDataSubfolder, saveNamePrefix, 'FoxHandler_B_Players.lua' }), {})
@@ -27,6 +28,14 @@ local B_Players = TableLoad(table.concat({ FilePath, saveDataSubfolder, saveName
 local B_AI = TableLoad(table.concat({ FilePath, saveDataSubfolder, saveNamePrefix, 'FoxHandler_B_AI.lua' }))
 local R_players = TableLoad(table.concat({ FilePath, saveDataSubfolder, saveNamePrefix, 'FoxHandler_R_Players.lua' }))
 local R_AI = TableLoad(table.concat({ FilePath, saveDataSubfolder, saveNamePrefix, 'FoxHandler_R_AI.lua' }))
+local FoxUsersT = true
+local FoxUsersF = false
+
+do                                                          -- adding submenu for foxhandller
+    local FoxUsersMenu = trigger.action.addOtherSubmenu('FoxHandler Opt in', nil)
+    trigger.addOtherCommand('Yes', 80, 'all', FoxUsersMenu) -- adding command option, assigned to userflagvalue 80
+    trigger.addOtherCommand('No', 81, 'all', FoxUsersMenu)  -- as above but flagvalue 81
+end
 --FoxUsers[ucid].tx = true
 --FoxUsers[ucid].rx = false --currently unused, here for ref.
 
@@ -54,9 +63,12 @@ function FoxHandler:onEvent(event)
         local wpGuideType = event.weapon:getDesc().GuidanceType
         local tgt = event.weapon:getTarget()
         --check to see if unit is active player if not skip
+        --need to tie in a red / blue check before xmit on taccom
         if wpMisCat == weapon.MissileCategory.AAM and wpGuideType == wpGuideType.RADAR_ACTIVE then
             if tgt then
                 env.info(playerName, ' Fox 3 at ', tgt)
+                local p = trigger.misc.getZone('zone').point
+                trigger.action.radioTransmission('somefilename.wav', p, 0, false, 255500000, 100, 'message') --xmit on taccom at 100 percent. not sure about the trigger zone?
             else
                 env.info(playerName, ' Maddog!')
             end
@@ -122,5 +134,3 @@ end
     playerName:getController():setCommand(msg)]]
 
 world.addEventHandler(FoxHandler)
-
-
