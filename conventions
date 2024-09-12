@@ -1,0 +1,39 @@
+#Config
+  Config will be placed in "CONFIG_%MissionName%.lua", but may have default settings if left unconfigured (allowing for optional config)
+  Config settings should all be placed in this file, at their default value, commented out for the user to change them. Comments included there for end users unsure what the 
+
+
+#SaveData
+  TableIO is probably best for saving tables to disk, in "/scripts/saves/%MissionName%_%ScriptName%_%ScriptFunction%.lua"
+  optionally omitting "%MissionName%" from the file name if not desirable to be saved per-miz. Ex: Saving a users preferences for a script.
+  Ideally minimize number of files on disk, where possible.
+
+
+#CodeConventions
+  Camel case for local variables "privateVariableNameHeare"
+  Pascal case for public variables "PublicVariableNameHeare"
+  Upper case for public constants "PUBLICCONSTANTNAMEHERE"
+  tabs as spaces, double or quad spaces. [  ] or [    ]
+  required in-miz code should be kept to an aboslute minimum, favouring for in-config code. Any mandatory requirements should go in the /miz/ directory. Ex: "/miz/mandatory in miz triggerScript startup.lua"
+  scripts should be designed around loading from disk, after config, by the typical scriptloader at the end of the config file
+  Use of private variables everywhere possible for efficiency, and security. Publics should be either mandatory for some reason, or highly desirable to be accessible by other scripts for some reason, to be used.
+  Common functions getting pull requests into ChaosTools, to act as a library for multiple scripts, if deemed worthwhile
+  Performance-first mindset. Ex: Hashmaps/lookuptables should be commonplace, instead of itterating through a list to find a result, or merging event handlers into a single handler for a script, or using nested if's to mitigate unnessiasry code execution for branching code
+
+
+#BranchControl
+  MAIN branch is for release build code. This branch goes direct to the stable servers, and build scripts will push this TO 'stable' servers. This is ONLY pulled from DEV branch, when deemed stable.
+  DEV branch is a beta for dev build code. This branch goes direct to the dev servers, and build scripts will push this TO 'dev' servers. Public players may still play on these servers.
+  alternate branches created for developing code Ex: Refactor branch for refactors, featureAdd featureName branch for new features in progress but not complete for merge, etc
+
+
+#Forks
+  Ideally, create a new branch, see #BranchControl Please do not make forks publically available, even for a second.
+  Due to the way github handles forks, please refrain from forking private repos. 
+
+  Forks *can* be a security issue if a secured item is uploaded to the repo ever, as they will even contain all data even for upstream repos they have never merged to. Contact Chaos for questions
+
+
+#SecurityFAQ
+  Q  What should I do if I accidentally upload a private key or password to a repo?
+  A: IMMEDIATELY change the key/password in question. Contact the repo owner and disclose this as some actions could be taken Ex: If the repo has never been public, and never been forked to be public, we can potentially delete and reupload the repo as a last resort. This further requires NO FORKS to exist. again, please do not fork.
