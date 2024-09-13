@@ -1,5 +1,4 @@
 #!/bin/bash
-#sh -l
 
 apt-get -y update
 apt-get -y install git
@@ -50,7 +49,7 @@ echo 'cloning output repo to build commit/push'
 mkdir "$HOME/git"
 mkdir "$HOME/git/outputrepo"
 GIT_CMD_REPOSITORY="git@$GIT_SERVER:$USER_NAME/$OUTPUT_REPO.git"
-git clone --branch dev "$GIT_CMD_REPOSITORY" "$HOME/git/outputrepo"
+git clone --branch "$BRANCHSELECTION" "$GIT_CMD_REPOSITORY" "$HOME/git/outputrepo"
 cp -r "$HOME/git/outputrepo" "$OUTPUT_DIR"
     
 echo ===========================================================================
@@ -74,12 +73,12 @@ if [ -d "./scripts" ]; then
     echo 'config file needing merging detected..'
     rm -rf $OUTPUT_DIR/scripts/CONFIG_%MissionName%.lua
 
-    # get existing dev branch config in ChaosTheory
+    # get existing branch config in ChaosTheory
     echo 'cloning repo to get merge file..'
     mkdir "$HOME/git"
     mkdir $MERGE_DIR
     GIT_CMD_REPOSITORY="git@$GIT_SERVER:$USER_NAME/$MERGE_REPO.git"
-    git clone --branch dev "$GIT_CMD_REPOSITORY" "$MERGE_DIR"
+    git clone --branch "$BRANCHSELECTION" "$GIT_CMD_REPOSITORY" "$MERGE_DIR"
     echo 'merge directory contents:'
     ls $MERGE_DIR
     
