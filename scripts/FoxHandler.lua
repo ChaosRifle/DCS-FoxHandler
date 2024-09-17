@@ -116,6 +116,7 @@ function FoxHandler:onEvent(event)
             if playerName then
                 local playerInfo = GetPlayerInfo(playerName)
                 FoxUsers[playerInfo.ucid].tx = true
+                TableSave(table.concat({FilePath, saveDataSubfolder, saveDataPrefix, 'FoxHandler_FoxUsers.lua'}), FoxUsers)
                 trigger.action.removeMark(event.idx) --delete the message from being seen by other people, as it was a command.
             end
         end
