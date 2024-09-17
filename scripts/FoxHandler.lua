@@ -108,6 +108,7 @@ function FoxHandler:onEvent(event)
             if playerName then
                 local playerInfo = get_player_info(playername)
                 FoxUsers[playerinfo.ucid].tx = false
+                TableSave(table.concat({FilePath, saveDataSubfolder, saveDataPrefix, 'FoxHandler_FoxUsers.lua'}), FoxUsers)
                 trigger.action.outTextForCoalition(1, 'FoxHandler disabled: Opt in to enable!', 5)
             end
         else
