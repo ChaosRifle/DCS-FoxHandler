@@ -1,45 +1,43 @@
---FoxHandler
---requires: tableIO and ChaosTools
---requires config file containing: MissionName, FilePath
-
---local saveDataSubfolder = 'saves/'
---local saveNamePrefix = MissionName .. '_'
-
-
+-- FoxHandler
+-- requires: tableIO and ChaosTools
+-- requires config file containing: MissionName, FilePath
+-- local saveDataSubfolder = 'saves/'
+-- local saveNamePrefix = MissionName .. '_'
 FoxUsers = {}
 
---main
-if not FileExists(table.concat({ FilePath, saveDataSubfolder, saveNamePrefix, 'FoxHandler_B_Players.lua' })) then
-    TableSave(table.concat({ FilePath, saveDataSubfolder, saveNamePrefix, 'FoxHandler_B_Players.lua' }), {})
+-- main
+if not FileExists(table.concat({FilePath, saveDataSubfolder, saveNamePrefix, 'FoxHandler_B_Players.lua'})) then
+    TableSave(table.concat({FilePath, saveDataSubfolder, saveNamePrefix, 'FoxHandler_B_Players.lua'}), {})
 end
-if not FileExists(table.concat({ FilePath, saveDataSubfolder, saveNamePrefix, 'FoxHandler_B_AI.lua' })) then
-    TableSave(table.concat({ FilePath, saveDataSubfolder, saveNamePrefix, 'FoxHandler_B_AI.lua' }), {})
+if not FileExists(table.concat({FilePath, saveDataSubfolder, saveNamePrefix, 'FoxHandler_B_AI.lua'})) then
+    TableSave(table.concat({FilePath, saveDataSubfolder, saveNamePrefix, 'FoxHandler_B_AI.lua'}), {})
 end
-if not FileExists(table.concat({ FilePath, saveDataSubfolder, saveNamePrefix, 'FoxHandler_R_Players.lua' })) then
-    TableSave(table.concat({ FilePath, saveDataSubfolder, saveNamePrefix, 'FoxHandler_R_Players.lua' }), {})
+if not FileExists(table.concat({FilePath, saveDataSubfolder, saveNamePrefix, 'FoxHandler_R_Players.lua'})) then
+    TableSave(table.concat({FilePath, saveDataSubfolder, saveNamePrefix, 'FoxHandler_R_Players.lua'}), {})
 end
-if not FileExists(table.concat({ FilePath, saveDataSubfolder, saveNamePrefix, 'FoxHandler_R_AI.lua' })) then
-    TableSave(table.concat({ FilePath, saveDataSubfolder, saveNamePrefix, 'FoxHandler_R_AI.lua' }), {})
+if not FileExists(table.concat({FilePath, saveDataSubfolder, saveNamePrefix, 'FoxHandler_R_AI.lua'})) then
+    TableSave(table.concat({FilePath, saveDataSubfolder, saveNamePrefix, 'FoxHandler_R_AI.lua'}), {})
 end
-
+if not FileExists(table.concat({FilePath, saveDataSubfolder, saveNamePrefix, 'FoxHandler_FoxUsers.lua'})) then
+    TableSave(table.concat({FilePath, saveDataSubfolder, saveNamePrefix, 'FoxHandler_FoxUsers.lua'}), {})
+end
 
 local FoxHandler = {}
-local B_Players = TableLoad(table.concat({ FilePath, saveDataSubfolder, saveNamePrefix, 'FoxHandler_B_Players.lua' }))
-local B_AI = TableLoad(table.concat({ FilePath, saveDataSubfolder, saveNamePrefix, 'FoxHandler_B_AI.lua' }))
-local R_players = TableLoad(table.concat({ FilePath, saveDataSubfolder, saveNamePrefix, 'FoxHandler_R_Players.lua' }))
-local R_AI = TableLoad(table.concat({ FilePath, saveDataSubfolder, saveNamePrefix, 'FoxHandler_R_AI.lua' }))
+
+local B_Players = TableLoad(table.concat({FilePath, saveDataSubfolder, saveNamePrefix, 'FoxHandler_B_Players.lua'}))
+local B_AI = TableLoad(table.concat({FilePath, saveDataSubfolder, saveNamePrefix, 'FoxHandler_B_AI.lua'}))
+local R_players = TableLoad(table.concat({FilePath, saveDataSubfolder, saveNamePrefix, 'FoxHandler_R_Players.lua'}))
+local R_AI = TableLoad(table.concat({FilePath, saveDataSubfolder, saveNamePrefix, 'FoxHandler_R_AI.lua'}))
 local FoxUsersT = true
 local FoxUsersF = false
 
-do                                                          -- adding submenu for foxhandller
+do -- adding submenu for foxhandller
     local FoxUsersMenu = trigger.action.addOtherSubmenu('FoxHandler Opt in', nil)
     trigger.addOtherCommand('Yes', 80, 'all', FoxUsersMenu) -- adding command option, assigned to userflagvalue 80
-    trigger.addOtherCommand('No', 81, 'all', FoxUsersMenu)  -- as above but flagvalue 81
+    trigger.addOtherCommand('No', 81, 'all', FoxUsersMenu) -- as above but flagvalue 81
 end
---FoxUsers[ucid].tx = true
---FoxUsers[ucid].rx = false --currently unused, here for ref.
-
-
+-- FoxUsers[ucid].tx = true
+-- FoxUsers[ucid].rx = false --currently unused, here for ref.
 
 local playerName = Unit.getPlayerName(event.initiator)
 if playerName then
@@ -53,8 +51,6 @@ if playerName then
     end
 end
 
-
-
 function FoxHandler:onEvent(event)
     if event.id == world.event.S_EVENT_SHOT then
         local unitName = event.initiator:getName()
@@ -62,13 +58,13 @@ function FoxHandler:onEvent(event)
         local wpMisCat = event.weapon:getDesc().MissileCategory
         local wpGuideType = event.weapon:getDesc().GuidanceType
         local tgt = event.weapon:getTarget()
-        --check to see if unit is active player if not skip
-        --need to tie in a red / blue check before xmit on taccom
+        -- check to see if unit is active player if not skip
+        -- need to tie in a red / blue check before xmit on taccom
         if wpMisCat == weapon.MissileCategory.AAM and wpGuideType == wpGuideType.RADAR_ACTIVE then
             if tgt then
                 env.info(playerName, ' Fox 3 at ', tgt)
                 local p = trigger.misc.getZone('zone').point
-                trigger.action.radioTransmission('somefilename.wav', p, 0, false, 255500000, 100, 'message') --xmit on taccom at 100 percent. not sure about the trigger zone?
+                trigger.action.radioTransmission('somefilename.wav', p, 0, false, 255500000, 100, 'message') -- xmit on taccom at 100 percent. not sure about the trigger zone?
             else
                 env.info(playerName, ' Maddog!')
             end
@@ -100,6 +96,28 @@ function FoxHandler:onEvent(event)
         --     text = string markText,
         --     pos = vec3
         --    }
+        if text == 'foxhandler tx enable' then
+            local playerName = Unit.getPlayerName(event.initiator)
+            if playerName then
+                local playerInfo = get_player_info(playerName)
+                FoxUsers[playerInfo.ucid].tx = true
+                TableSave(table.concat({FilePath, saveDataPrefix, saveDataPrefix, 'FoxHandler_FoxUsers.lua'}), FoxUsers)
+            end
+        elseif text == 'foxhandler tx disable' then
+            local playerName = unit.getPlayerName(event.initiator)
+            if playerName then
+                local playerInfo = get_player_info(playername)
+                FoxUsers[playerinfo.ucid].tx = false
+                trigger.action.outTextForCoalition(1, 'FoxHandler disabled: Opt in to enable!', 5)
+            end
+        else
+            local playername = get_player_info(playername)
+            FoxUsers[playerinfo.ucid].tx = false
+            TableSave(table.concat({FilePath, saveDataSubfolder, saveDataPrefix, 'FoxHandler_FoxUsers.lua'}), FoxUsers)
+            trigger.action.outTextForCoalition(1,
+                'FoxHandler disabled, enable with f10 mark titled "FoxHandler tx enable"!', 10)
+        end
+
     elseif event.id == world.event.S_EVENT_MARK_CHANGE then -- marker commands                                          -- IDENTICAL TO S_EVENT_MARK_ADDED, S_EVENT_MARK_CHANGE
         -- Event = {
         --     id = 26,
@@ -116,8 +134,9 @@ function FoxHandler:onEvent(event)
             if playerName then
                 local playerInfo = GetPlayerInfo(playerName)
                 FoxUsers[playerInfo.ucid].tx = true
-                TableSave(table.concat({FilePath, saveDataSubfolder, saveDataPrefix, 'FoxHandler_FoxUsers.lua'}), FoxUsers)
-                trigger.action.removeMark(event.idx) --delete the message from being seen by other people, as it was a command.
+                TableSave(table.concat({FilePath, saveDataSubfolder, saveDataPrefix, 'FoxHandler_FoxUsers.lua'}),
+                    FoxUsers)
+                trigger.action.removeMark(event.idx) -- delete the message from being seen by other people, as it was a command.
             end
         end
     end
