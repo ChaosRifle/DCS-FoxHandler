@@ -1,7 +1,7 @@
 -- FoxHandler
 -- requires: tableIO, ChaosTools, Mist for scheduleFunction
 -- requires config file containing: MissionName, FilePath, TACCOM, TACCOMModulation
-local version = '0.6.4'
+local version = '0.6.5'
 
 
 -- default config, not recommended to change this. If you want something different, overwrite it with the respective public variable prefixed LifeHanderConfig_ as pointed out above
@@ -69,11 +69,11 @@ local function transmitRadioCalloutData(output, initiatorCoalition, outputString
             trigger.action.outTextForCoalition(initiatorCoalition, catString, displayTime)
         end
 
-        local radioCalloutFile = table.concat({ mizFilepath, voiceActor[foxDataTx[ucid].va], [[main\]], filename, '.wav' })
+        local radioCalloutFile = table.concat({ mizFilepath, foxDataTx[ucid].va, [[main\]], filename, '.wav' })
         trigger.action.radioTransmission(radioCalloutFile, txPoint, TACCOMModulation[initiatorCoalition + 1], false, TACCOM[initiatorCoalition + 1], txPower, '')
         if foxDataTx[ucid].callsign then
-            if voiceActors[foxDataTx[ucid].va] and voiceActors[foxDataTx[ucid].va].callsignsAvailable[string.lower(foxDataTx[ucid].callsign)] then
-                callsignFile = table.concat({ mizFilepath, voiceActor[foxDataTx[ucid].va], [[\callsigns\]], voiceActors[foxDataTx[ucid].va].callsignsAvailable[string.lower(foxDataTx[ucid].callsign)], '.wav' })
+            if voiceActors[foxDataTx[ucid].va] and voiceActors[foxDataTx[ucid].va].callsignsAvailable[foxDataTx[ucid].callsign] then
+                callsignFile = table.concat({ mizFilepath, foxDataTx[ucid].va, [[\callsigns\]], voiceActors[foxDataTx[ucid].va].callsignsAvailable[foxDataTx[ucid].callsign], '.wav' })
                 local delay = 1.5 --delay by fileToPlayPlaytimeLength --FIXME this should be dynamic, probably based on file playtime length - this could be done by embedding a file with that data. TEST this actually takes and parses decimal values
                 mist.scheduleFunction(trigger.action.radioTransmission(), {callsignFile, txPoint, TACCOMModulation[initiatorCoalition + 1], false, TACCOM[initiatorCoalition + 1], txPower, ''}, timer.getTime() + delay)
             end
@@ -105,11 +105,21 @@ end
 
 local voiceActors = {
     ['chaos'] = { ['va'] = 'chaos', ['gender'] = 'm', ['enum'] = 1, ['callsignsAvailable'] = { 'graaf' } },
-    ['m1'] = { ['va'] = 'chaos', ['gender'] = 'm', ['enum'] = 1, ['callsignsAvailable'] = { 'graaf' } },
-
-    ['rain'] = { ['va'] = 'rain', ['gender'] = 'f', ['enum'] = 1, ['callsignsAvailable'] = { 'anna', 'graaf', 'jedi' } },
-    ['f1'] = { ['va'] = 'rain', ['gender'] = 'f', ['enum'] = 1, ['callsignsAvailable'] = { 'anna', 'graaf', 'jedi' } }
+    ['rain'] = { ['va'] = 'rain', ['gender'] = 'f', ['enum'] = 1, ['callsignsAvailable'] = { 'anna', 'graaf', 'jedi' } }
 }
+for key, value in pairs(voiceActors) do
+    voiceActors[key].stringifiedCallsigns = table.concat(voiceActors[key].callsignsAvailable, ', ')
+end
+
+do --create enumerated references in the table such as m1, m2, f1, f2, etc
+    local tempData = {}
+    for key, value in pairs(voiceActors) do
+        tempData[value.gender .. value.enum] = voiceActors[key]
+        tempData[key] = voiceActors[key]
+    end
+    voiceActors = tempData
+end
+
 
 local uniqueVoiceActors = {}
 local uniqueVoiceActorsString = ''
@@ -365,7 +375,7 @@ function foxHandler:onEvent(event)
                     local va = string.lower(event.text:gsub('^va ', ''))
                     if voiceActors[va] then
                         foxDataTx[playerInfo.ucid].va = voiceActors[va].va
-                        text = 'Foxhandler VA set to: ' .. voiceActors[va].va
+                        text = table.concat({'Foxhandler VA set to: ', voiceActors[va].va, '. Available vocalized callsigns for the chosen VA are: ', voiceActors[va].stringifiedCallsigns})
                         TableSave(table.concat({FilePath, saveDataSubfolder, saveDataPrefix, 'FoxHandler_foxDataTx.lua'}), foxDataTx)
                     else
                         text = table.concat({'Foxhandler error: The VA you requested was not found. You requested: "', va, '". you can use the "list va" command to get available voice actors'})
@@ -383,7 +393,25 @@ function foxHandler:onEvent(event)
                 local playerInfo = GetPlayerInfo(playerName)
                 local text = ''
                 if foxDataTx[playerInfo.ucid] then
-                    text = 'available voice actors are: ' .. uniqueVoiceActorsString
+                    text = {'Format is "VoiceActor : [optional vocalized callsigns]". | '}
+                    local timeIncrementer = timer.getTime()
+                    for key, value in pairs(uniqueVoiceActors) do
+                        table.insert(text, voiceActors[value].va)
+                        table.insert(text, ': [')
+                        table.insert(text, voiceActors[value].stringifiedCallsigns)
+                        table.insert(text, '], ')
+
+                        local function FHPlayDemoSound(unitID, radioCalloutFile, nowPlaying)
+                            trigger.action.outTextForUnit(unitID, 'VA now playing: ' .. nowPlaying, 2)
+                            trigger.action.ouSoundForUnit(unitID, radioCalloutFile)
+                        end
+
+                        local radioCalloutFile = table.concat({ mizFilepath, voiceActors[value].va, [[main\magnum.wav]] })
+                        mist.scheduleFunction(FHPlayDemoSound, {unitID, radioCalloutFile, voiceActors[value].va}, timeIncrementer)
+                        timeIncrementer = timeIncrementer + 2
+                    end
+                    text[#text] = ']'
+                    --text = 'available voice actors are: ' .. uniqueVoiceActorsString
                 else
                     text = 'Error: Could not find your UCID. Please report this occurance to server staff'
                 end
@@ -495,36 +523,6 @@ function foxHandler:onEvent(event)
             trigger.action.removeMark(event.idx)
         end
 
-
-
-
-
-        if not FileExists(table.concat({FilePath, saveDataSubfolder, saveDataPrefix, 'FoxHandler_foxDataTx.lua'})) then
-            local playerlist = net.get_player_list()
-            local serverSpectatorInfo = net.get_player_info(playerlist[1])
-            TableSave(table.concat({FilePath, saveDataSubfolder, saveDataPrefix, 'FoxHandler_foxDataTx.lua'}), {[serverSpectatorInfo.ucid] = {
-                ['name'] = serverSpectatorInfo.name,
-                ['va'] = 'chaos',
-                ['tx'] = false, --manual disable for turning off all tx comms output from this user
-                ['callsign'] = 'watcher',
-                ['shackSplash'] = true, --manual disable for turning off shack or splash tx comms output from this user
-                ['lastLaunchCalloutTime'] = '0', --time
-                ['lastShackSplashCalloutTime'] = '0', --time
-                ['lastLaunchType'] = 'typename?', --possible future use for x2 x3 x4 callouts for repeated launches
-                ['serverObserver'] = true
-            }})
-        end
-        if not FileExists(table.concat({FilePath, saveDataSubfolder, saveDataPrefix, 'FoxHandler_foxDataRx.lua'})) then
-            local playerlist = net.get_player_list()
-            local serverSpectatorInfo = net.get_player_info(playerlist[1])
-            TableSave(table.concat({FilePath, saveDataSubfolder, saveDataPrefix, 'FoxHandler_foxDataRx.lua'}), {[serverSpectatorInfo.ucid] = {
-                ['name'] = serverSpectatorInfo.name,
-                ['rx'] = false,
-                ['side'] = coalition.side.NEUTRAL,
-                ['unit'] = 'unit id_ for transmission to be sent to. updated by birth events',
-                ['serverObserver'] = true
-            }})
-        end
 
     end
 end
